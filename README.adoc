@@ -21,3 +21,11 @@ Usage of ./oauth2-cli:
   -upw string
     	end user secret (default "buzz")
 ```
+
+= Installation
+
+Install https://golang.org/[Go]
+
+Install the binary into your current directory:
+
+  GOBIN=$(pwd) GOPATH=$(mktemp -d) go get github.com/seakayone/go-oauth2-cli
