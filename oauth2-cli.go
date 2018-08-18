@@ -16,12 +16,35 @@ const (
 	passwordGrant = "password"
 )
 
+const (
+	error   = 1
+	success = 0
+)
+
 func main() {
+	os.Exit(Run())
+}
+
+func Run() int {
 	host, cid, cpw, uid, upw, typ := parseFlags()
-	req := createRequest(host, cid, cpw, uid, upw, typ)
-	body := sendRequest(req)
-	token := extractAccessToken(body)
+
+	req, e := createRequest(host, cid, cpw, uid, upw, typ)
+	if e != success {
+		return e
+	}
+
+	body, e := sendRequest(req)
+	if e != success {
+		return e
+	}
+
+	token, e := extractAccessToken(body)
+	if e != success {
+		return e
+	}
+
 	fmt.Println(token)
+	return success
 }
 
 func parseFlags() (*string, *string, *string, *string, *string, *string) {
@@ -36,7 +59,7 @@ func parseFlags() (*string, *string, *string, *string, *string, *string) {
 	return host, cid, cpw, uid, upw, typ
 }
 
-func createRequest(host *string, cid *string, cpw *string, uid *string, upw *string, typ *string) (*http.Request) {
+func createRequest(host *string, cid *string, cpw *string, uid *string, upw *string, typ *string) (*http.Request, int) {
 	var fieldWriter BodyFieldWriter
 	if *typ == clientGrant {
 		fieldWriter = clientGrantBodyWriter()
@@ -44,7 +67,7 @@ func createRequest(host *string, cid *string, cpw *string, uid *string, upw *str
 		fieldWriter = passwordGrantBodyWriter(uid, upw)
 	} else {
 		fmt.Println("Unknown grant type (typ parameter was: '" + *typ + "')")
-		os.Exit(1)
+		return nil, error
 	}
 	return multiPartFormDataRequestWithBody(host, cid, cpw, fieldWriter)
 }
@@ -65,7 +88,7 @@ func passwordGrantBodyWriter(uid *string, upw *string) BodyFieldWriter {
 	}
 }
 
-func multiPartFormDataRequestWithBody(host *string, cid *string, cpw *string, bodyFieldWriter BodyFieldWriter) (*http.Request) {
+func multiPartFormDataRequestWithBody(host *string, cid *string, cpw *string, bodyFieldWriter BodyFieldWriter) (*http.Request, int) {
 	bodyBuf := &bytes.Buffer{}
 	bodyWriter := multipart.NewWriter(bodyBuf)
 
@@ -73,17 +96,18 @@ func multiPartFormDataRequestWithBody(host *string, cid *string, cpw *string, bo
 
 	contentType := bodyWriter.FormDataContentType()
 	bodyWriter.Close()
+
 	req, err := http.NewRequest("POST", *host, bodyBuf)
 	if err != nil {
-		panic(err)
+		return nil, error
 	}
 
 	req.Header.Add("Content-Type", contentType)
 	req.SetBasicAuth(*cid, *cpw)
-	return req
+	return req, success
 }
 
-func sendRequest(req *http.Request) []byte {
+func sendRequest(req *http.Request) ([]byte, int) {
 	res, err := http.DefaultClient.Do(req)
 
 	if err != nil {
@@ -100,10 +124,10 @@ func sendRequest(req *http.Request) []byte {
 	if res.StatusCode != 200 {
 		fmt.Fprintf(os.Stderr, "Error fetching access token:\n")
 		fmt.Fprintf(os.Stderr, string(body))
-		os.Exit(1)
+		return nil, error
 	}
 
-	return body
+	return body, success
 }
 
 type AccessTokenResponse struct {
@@ -112,7 +136,7 @@ type AccessTokenResponse struct {
 	Expiry      int    `json:"expires_in"`
 }
 
-func extractAccessToken(body []byte) string {
+func extractAccessToken(body []byte) (string, int) {
 	var atr AccessTokenResponse
 	err := json.Unmarshal(body, &atr)
 	if err != nil {
@@ -122,7 +146,7 @@ func extractAccessToken(body []byte) string {
 		fmt.Fprintf(os.Stderr, "Response was:\n")
 		fmt.Fprintf(os.Stderr, string(body)[:200])
 		fmt.Fprintf(os.Stderr, "...")
-		os.Exit(1)
+		return "", error
 	}
-	return atr.AccessToken
+	return atr.AccessToken, success
 }
