@@ -20,6 +20,13 @@ const (
 	error   = 1
 	success = 0
 )
+const usage = `Usage of oauth2-cli:
+
+oauth2-cli [opts]
+
+	oauth2-cli retrieves an OAuth2 access token using client or password grant
+
+`
 
 func main() {
 	os.Exit(Run())
@@ -48,7 +55,11 @@ func Run() int {
 }
 
 func parseFlags() (*string, *string, *string, *string, *string, *string) {
-	host := flag.String("host", "http://localhost:9094/token", "client secret")
+	flag.Usage = func() {
+		fmt.Fprintf(os.Stderr, usage)
+		flag.PrintDefaults()
+	}
+	host := flag.String("host", "http://localhost:9094/token", "authorization server url")
 	cid := flag.String("cid", "foo", "client id")
 	cpw := flag.String("cpw", "bar", "client secret")
 	uid := flag.String("uid", "fizz", "end user id")
