@@ -1,0 +1,23 @@
+image:https://travis-ci.org/seakayone/go-oauth2-cli.svg?branch=master["Build Status", link="https://travis-ci.org/seakayone/go-oauth2-cli"]
+
+# Oauth2 Command Line Client 
+
+Simple cli command currently supporting https://tools.ietf.org/html/rfc6749(OAuth2) grant types `client_credentials` and `password`.
+
+# Usage
+
+```
+Usage of ./oauth2-cli:
+  -cid string
+    	client id (default "foo")
+  -cpw string
+    	client secret (default "bar")
+  -host string
+    	client secret (default "http://localhost:9094/token")
+  -typ string
+    	grant type, can be client_credentials or password (default "client_credentials")
+  -uid string
+    	end user id (default "fizz")
+  -upw string
+    	end user secret (default "buzz")
+```
