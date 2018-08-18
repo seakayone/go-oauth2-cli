@@ -7,13 +7,20 @@ Simple cli command currently supporting https://tools.ietf.org/html/rfc6749[OAut
 = Usage
 
 ```
-Usage of ./oauth2-cli:
+$ oauth2-cli -h
+
+Usage of oauth2-cli:
+
+oauth2-cli [opts]
+
+	oauth2-cli retrieves an OAuth2 access token using client or password grant
+
   -cid string
     	client id (default "foo")
   -cpw string
     	client secret (default "bar")
   -host string
-    	client secret (default "http://localhost:9094/token")
+    	authorization server url (default "http://localhost:9094/token")
   -typ string
     	grant type, can be client_credentials or password (default "client_credentials")
   -uid string
