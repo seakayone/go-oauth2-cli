@@ -1,10 +1,10 @@
 image:https://travis-ci.org/seakayone/go-oauth2-cli.svg?branch=master["Build Status", link="https://travis-ci.org/seakayone/go-oauth2-cli"]
 
-# Oauth2 Command Line Client 
+= Oauth2 Command Line Client
 
-Simple cli command currently supporting https://tools.ietf.org/html/rfc6749(OAuth2) grant types `client_credentials` and `password`.
+Simple cli command currently supporting https://tools.ietf.org/html/rfc6749[OAuth2] grant types `client_credentials` and `password`.
 
-# Usage
+= Usage
 
 ```
 Usage of ./oauth2-cli:
