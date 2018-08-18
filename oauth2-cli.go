@@ -56,6 +56,7 @@ func clientGrantBodyWriter() BodyFieldWriter {
 		bodyWriter.WriteField("grant_type", clientGrant)
 	}
 }
+
 func passwordGrantBodyWriter(uid *string, upw *string) BodyFieldWriter {
 	return func(bodyWriter *multipart.Writer) {
 		bodyWriter.WriteField("grant_type", passwordGrant)
