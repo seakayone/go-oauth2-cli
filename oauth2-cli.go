@@ -7,8 +7,8 @@ import (
 	"encoding/json"
 	"flag"
 	"os"
-	"bytes"
-	"mime/multipart"
+	"strings"
+	"net/url"
 )
 
 const (
@@ -71,50 +71,29 @@ func parseFlags() (*string, *string, *string, *string, *string, *string) {
 }
 
 func createRequest(host *string, cid *string, cpw *string, uid *string, upw *string, typ *string) (*http.Request, int) {
-	var fieldWriter BodyFieldWriter
+	data := url.Values{}
 	if *typ == clientGrant {
-		fieldWriter = clientGrantBodyWriter()
+		data.Add("grant_type", clientGrant)
 	} else if *typ == passwordGrant {
-		fieldWriter = passwordGrantBodyWriter(uid, upw)
+		data.Add("grant_type", passwordGrant)
+		data.Add("username", *uid)
+		data.Add("password", *upw)
 	} else {
 		fmt.Println("Unknown grant type (typ parameter was: '" + *typ + "')")
 		return nil, error
 	}
-	return multiPartFormDataRequestWithBody(host, cid, cpw, fieldWriter)
+	return formDataRequestWithBody(host, cid, cpw, data)
 }
 
-type BodyFieldWriter func(bodyWriter *multipart.Writer)
-
-func clientGrantBodyWriter() BodyFieldWriter {
-	return func(bodyWriter *multipart.Writer) {
-		bodyWriter.WriteField("grant_type", clientGrant)
-	}
-}
-
-func passwordGrantBodyWriter(uid *string, upw *string) BodyFieldWriter {
-	return func(bodyWriter *multipart.Writer) {
-		bodyWriter.WriteField("grant_type", passwordGrant)
-		bodyWriter.WriteField("username", *uid)
-		bodyWriter.WriteField("password", *upw)
-	}
-}
-
-func multiPartFormDataRequestWithBody(host *string, cid *string, cpw *string, bodyFieldWriter BodyFieldWriter) (*http.Request, int) {
-	bodyBuf := &bytes.Buffer{}
-	bodyWriter := multipart.NewWriter(bodyBuf)
-
-	bodyFieldWriter(bodyWriter)
-
-	contentType := bodyWriter.FormDataContentType()
-	bodyWriter.Close()
-
-	req, err := http.NewRequest("POST", *host, bodyBuf)
+func formDataRequestWithBody(host *string, cid *string, cpw *string, data url.Values) (*http.Request, int) {
+	req, err := http.NewRequest("POST", *host, strings.NewReader(data.Encode()))
 	if err != nil {
 		return nil, error
 	}
 
-	req.Header.Add("Content-Type", contentType)
+	req.Header.Add("Content-Type", "application/x-www-form-urlencoded")
 	req.SetBasicAuth(*cid, *cpw)
+
 	return req, success
 }
 
@@ -133,7 +112,7 @@ func sendRequest(req *http.Request) ([]byte, int) {
 	}
 
 	if res.StatusCode != 200 {
-		fmt.Fprintf(os.Stderr, "Error fetching access token:\n")
+		fmt.Fprintf(os.Stderr, "Error response from token endpoint (HTTP Status %d):\n", res.StatusCode)
 		fmt.Fprintf(os.Stderr, string(body))
 		return nil, error
 	}
