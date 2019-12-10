@@ -1,4 +1,5 @@
 image:https://travis-ci.org/seakayone/go-oauth2-cli.svg?branch=master["Build Status", link="https://travis-ci.org/seakayone/go-oauth2-cli"]
+image:https://goreportcard.com/badge/github.com/seakayone/go-oauth2-cli[https://goreportcard.com/report/github.com/seakayone/go-oauth2-cli]
 
 = OAuth2 Command Line Client
 
