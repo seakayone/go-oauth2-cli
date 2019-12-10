@@ -1,9 +1,9 @@
 package main
 
 import (
-	"testing"
-	"net/http"
 	"github.com/stretchr/testify/assert"
+	"net/http"
+	"testing"
 )
 
 func TestCreateRequestClientGrant(t *testing.T) {
