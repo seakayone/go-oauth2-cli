@@ -1,14 +1,14 @@
 package main
 
 import (
-	"fmt"
-	"net/http"
-	"io/ioutil"
 	"encoding/json"
 	"flag"
+	"fmt"
+	"io/ioutil"
+	"net/http"
+	"net/url"
 	"os"
 	"strings"
-	"net/url"
 )
 
 const (
@@ -33,6 +33,7 @@ func main() {
 }
 
 func Run() int {
+
 	host, cid, cpw, uid, upw, typ := parseFlags()
 
 	req, e := createRequest(host, cid, cpw, uid, upw, typ)
@@ -56,18 +57,28 @@ func Run() int {
 
 func parseFlags() (*string, *string, *string, *string, *string, *string) {
 	flag.Usage = func() {
-		fmt.Fprintf(os.Stderr, usage)
-		flag.PrintDefaults()
+		printUsageAndExit()
 	}
+
 	host := flag.String("host", "http://localhost:9094/token", "authorization server url")
-	cid := flag.String("cid", "foo", "client id")
-	cpw := flag.String("cpw", "bar", "client secret")
-	uid := flag.String("uid", "fizz", "end user id")
-	upw := flag.String("upw", "buzz", "end user secret")
+	cid := flag.String("cid", "", "client id")
+	cpw := flag.String("cpw", "", "client secret")
+	uid := flag.String("uid", "", "end user id")
+	upw := flag.String("upw", "", "end user secret")
 	typ := flag.String("typ", clientGrant, "grant type, can be "+clientGrant+" or "+passwordGrant)
 
-	flag.Parse()
+	if len(os.Args[1:]) > 0 {
+		flag.Parse()
+	} else {
+		printUsageAndExit()
+	}
 	return host, cid, cpw, uid, upw, typ
+}
+
+func printUsageAndExit() {
+	fmt.Fprintf(os.Stdout, usage)
+	flag.PrintDefaults()
+	os.Exit(0)
 }
 
 func createRequest(host *string, cid *string, cpw *string, uid *string, upw *string, typ *string) (*http.Request, int) {
